@@ -159,6 +159,7 @@ private:
 	uORB::Subscription _action_request_sub{ORB_ID(action_request)};
 	uORB::Subscription _airspeed_validated_sub{ORB_ID(airspeed_validated)};
 	uORB::Subscription _fw_virtual_att_sp_sub{ORB_ID(fw_virtual_attitude_setpoint)};
+	uORB::Subscription _fw_virtual_att_ref_sp_sub{ORB_ID(fw_virtual_vehicle_attitude_reference_setpoint)};
 	uORB::Subscription _home_position_sub{ORB_ID(home_position)};
 	uORB::Subscription _land_detected_sub{ORB_ID(vehicle_land_detected)};
 	uORB::Subscription _local_pos_sp_sub{ORB_ID(vehicle_local_position_setpoint)};
@@ -175,6 +176,7 @@ private:
 	uORB::Publication<normalized_unsigned_setpoint_s>	_flaps_setpoint_pub{ORB_ID(flaps_setpoint)};
 	uORB::Publication<normalized_unsigned_setpoint_s>	_spoilers_setpoint_pub{ORB_ID(spoilers_setpoint)};
 	uORB::Publication<vehicle_attitude_setpoint_s>		_vehicle_attitude_sp_pub{ORB_ID(vehicle_attitude_setpoint)};
+	uORB::Publication<vehicle_attitude_setpoint_s>		_vehicle_attitude_ref_sp_pub{ORB_ID(vehicle_attitude_reference_setpoint)};
 	uORB::PublicationMulti<vehicle_thrust_setpoint_s>	_vehicle_thrust_setpoint0_pub{ORB_ID(vehicle_thrust_setpoint)};
 	uORB::PublicationMulti<vehicle_thrust_setpoint_s>	_vehicle_thrust_setpoint1_pub{ORB_ID(vehicle_thrust_setpoint)};
 	uORB::PublicationMulti<vehicle_torque_setpoint_s>	_vehicle_torque_setpoint0_pub{ORB_ID(vehicle_torque_setpoint)};
@@ -185,6 +187,7 @@ private:
 
 	vehicle_attitude_setpoint_s		_vehicle_attitude_sp{};	// vehicle attitude setpoint
 	vehicle_attitude_setpoint_s 		_fw_virtual_att_sp{};	// virtual fw attitude setpoint
+	vehicle_attitude_setpoint_s 		_fw_virtual_att_ref_sp{};	// virtual fw attitude setpoint
 	vehicle_attitude_setpoint_s 		_mc_virtual_att_sp{};	// virtual mc attitude setpoint
 
 	vehicle_torque_setpoint_s		_vehicle_torque_setpoint_virtual_mc{};
@@ -210,6 +213,8 @@ private:
 	float _home_position_z{NAN};
 
 	float _air_density{atmosphere::kAirDensitySeaLevelStandardAtmos};	// [kg/m^3]
+
+	bool _is_in_att_ref_mode{false};
 
 	hrt_abstime _last_run_timestamp{0};
 
