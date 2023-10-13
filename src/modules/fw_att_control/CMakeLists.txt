@@ -36,8 +36,8 @@ px4_add_module(
 	MAIN fw_att_control
 	SRCS
 		FixedwingAttitudeControl.cpp
-		FixedwingAttitudeControl.hpp
 
+		att_ref_model.cpp
 		ecl_controller.cpp
 		ecl_pitch_controller.cpp
 		ecl_roll_controller.cpp

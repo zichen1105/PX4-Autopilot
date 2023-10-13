@@ -34,6 +34,7 @@
 #pragma once
 
 #include <drivers/drv_hrt.h>
+#include "att_ref_model.h"
 #include "ecl_pitch_controller.h"
 #include "ecl_roll_controller.h"
 #include "ecl_wheel_controller.h"
@@ -98,7 +99,6 @@ private:
 
 	uORB::SubscriptionInterval _parameter_update_sub{ORB_ID(parameter_update), 1_s};
 
-	uORB::Subscription _att_sp_sub{ORB_ID(vehicle_attitude_setpoint)};			/**< vehicle attitude setpoint */
 	uORB::Subscription _autotune_attitude_control_status_sub{ORB_ID(autotune_attitude_control_status)};
 	uORB::Subscription _local_pos_sub{ORB_ID(vehicle_local_position)};			/**< local position subscription */
 	uORB::Subscription _manual_control_setpoint_sub{ORB_ID(manual_control_setpoint)};	/**< notification of manual control updates */
@@ -164,9 +164,10 @@ private:
 	ECL_YawController _yaw_ctrl;
 	ECL_WheelController _wheel_ctrl;
 
+	FixedwingAttitudeReferenceModel _reference_model;
+
 	void parameters_update();
 	void vehicle_manual_poll(const float yaw_body);
-	void vehicle_attitude_setpoint_poll();
 	void vehicle_land_detected_poll();
 	float get_airspeed_constrained();
 };

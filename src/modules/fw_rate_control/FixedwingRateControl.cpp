@@ -360,8 +360,10 @@ void FixedwingRateControl::Run()
 				const Vector3f angular_acceleration_setpoint = _rate_control.update(rates, body_rates_setpoint, angular_accel, dt,
 						_landed);
 
-				const float roll_feedforward = _param_fw_rr_ff.get() * _airspeed_scaling * body_rates_setpoint(0);
-				const float pitch_feedforward = _param_fw_pr_ff.get() * _airspeed_scaling * body_rates_setpoint(1);
+				const float roll_feedforward = _param_fw_rr_ff.get() * _airspeed_scaling * body_rates_setpoint(
+								       0) + _param_fw_ra_ff.get() * _rates_sp.accel_feedforward[0];
+				const float pitch_feedforward = _param_fw_pr_ff.get() * _airspeed_scaling * body_rates_setpoint(
+									1) + _param_fw_pa_ff.get() * _rates_sp.accel_feedforward[1];
 				const float yaw_feedforward = _param_fw_yr_ff.get() * _airspeed_scaling * body_rates_setpoint(2);
 
 				const float roll_u = angular_acceleration_setpoint(0) * _airspeed_scaling * _airspeed_scaling + roll_feedforward;
