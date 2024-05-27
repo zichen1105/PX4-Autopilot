@@ -16,22 +16,22 @@ namespace sym {
  * Symbolic function: compute_flow_xy_innov_var_and_hx
  *
  * Args:
- *     state: Matrix24_1
- *     P: Matrix23_23
+ *     state: Matrix25_1
+ *     P: Matrix24_24
  *     distance: Scalar
  *     R: Scalar
  *     epsilon: Scalar
  *
  * Outputs:
  *     innov_var: Matrix21
- *     H: Matrix23_1
+ *     H: Matrix24_1
  */
 template <typename Scalar>
-void ComputeFlowXyInnovVarAndHx(const matrix::Matrix<Scalar, 24, 1>& state,
-                                const matrix::Matrix<Scalar, 23, 23>& P, const Scalar distance,
+void ComputeFlowXyInnovVarAndHx(const matrix::Matrix<Scalar, 25, 1>& state,
+                                const matrix::Matrix<Scalar, 24, 24>& P, const Scalar distance,
                                 const Scalar R, const Scalar epsilon,
                                 matrix::Matrix<Scalar, 2, 1>* const innov_var = nullptr,
-                                matrix::Matrix<Scalar, 23, 1>* const H = nullptr) {
+                                matrix::Matrix<Scalar, 24, 1>* const H = nullptr) {
   // Total ops: 275
 
   // Input arrays
@@ -117,7 +117,7 @@ void ComputeFlowXyInnovVarAndHx(const matrix::Matrix<Scalar, 24, 1>& state,
   }
 
   if (H != nullptr) {
-    matrix::Matrix<Scalar, 23, 1>& _h = (*H);
+    matrix::Matrix<Scalar, 24, 1>& _h = (*H);
 
     _h.setZero();
 
