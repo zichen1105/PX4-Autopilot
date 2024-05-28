@@ -458,7 +458,10 @@ def compute_mag_declination_pred_innov_var_and_h(
 
     return (meas_pred, innov_var, H.T)
 
-def predict_opt_flow(state, distance, epsilon):
+def predict_hagl(state):
+    return state["terrain"][0] - state["pos"][2]
+
+def predict_opt_flow(state, epsilon):
     R_to_body = state["quat_nominal"].inverse()
 
     # Calculate earth relative velocity in a non-rotating sensor frame
@@ -466,6 +469,7 @@ def predict_opt_flow(state, distance, epsilon):
 
     # Divide by range to get predicted angular LOS rates relative to X and Y
     # axes. Note these are rates in a non-rotating sensor frame
+    distance = predict_hagl(state)
     flow_pred = sf.V2()
     flow_pred[0] =  rel_vel_sensor[1] / distance
     flow_pred[1] = -rel_vel_sensor[0] / distance
@@ -473,16 +477,14 @@ def predict_opt_flow(state, distance, epsilon):
 
     return flow_pred
 
-
 def compute_flow_xy_innov_var_and_hx(
         state: VState,
         P: MTangent,
-        distance: sf.Scalar,
         R: sf.Scalar,
         epsilon: sf.Scalar
 ) -> (sf.V2, VTangent):
     state = vstate_to_state(state)
-    meas_pred = predict_opt_flow(state, distance, epsilon);
+    meas_pred = predict_opt_flow(state, epsilon)
 
     innov_var = sf.V2()
     Hx = jacobian_chain_rule(meas_pred[0], state)
@@ -495,17 +497,39 @@ def compute_flow_xy_innov_var_and_hx(
 def compute_flow_y_innov_var_and_h(
         state: VState,
         P: MTangent,
-        distance: sf.Scalar,
         R: sf.Scalar,
         epsilon: sf.Scalar
 ) -> (sf.Scalar, VTangent):
     state = vstate_to_state(state)
-    meas_pred = predict_opt_flow(state, distance, epsilon);
+    meas_pred = predict_opt_flow(state, epsilon)
 
     Hy = jacobian_chain_rule(meas_pred[1], state)
     innov_var = (Hy * P * Hy.T + R)[0,0]
 
     return (innov_var, Hy.T)
+
+def compute_hagl_innov_var(
+        P: MTangent,
+        R: sf.Scalar,
+) -> (sf.Scalar):
+    state = VState.symbolic("state")
+    state = vstate_to_state(state)
+    meas_pred = predict_hagl(state)
+
+    H = jacobian_chain_rule(meas_pred, state)
+    innov_var = (H * P * H.T + R)[0,0]
+
+    return (innov_var)
+
+def compute_hagl_h(
+) -> (VTangent):
+    state = VState.symbolic("state")
+    state = vstate_to_state(state)
+    meas_pred = predict_hagl(state)
+
+    H = jacobian_chain_rule(meas_pred, state)
+
+    return (H.T)
 
 def compute_gnss_yaw_pred_innov_var_and_h(
         state: VState,
@@ -666,6 +690,8 @@ if not args.disable_wind:
 generate_px4_function(compute_yaw_innov_var_and_h, output_names=["innov_var", "H"])
 generate_px4_function(compute_flow_xy_innov_var_and_hx, output_names=["innov_var", "H"])
 generate_px4_function(compute_flow_y_innov_var_and_h, output_names=["innov_var", "H"])
+generate_px4_function(compute_hagl_innov_var, output_names=["innov_var"])
+generate_px4_function(compute_hagl_h, output_names=["H"])
 generate_px4_function(compute_gnss_yaw_pred_innov_var_and_h, output_names=["meas_pred", "innov_var", "H"])
 generate_px4_function(compute_gravity_xyz_innov_var_and_hx, output_names=["innov_var", "Hx"])
 generate_px4_function(compute_gravity_y_innov_var_and_h, output_names=["innov_var", "Hy"])

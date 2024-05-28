@@ -18,7 +18,6 @@ namespace sym {
  * Args:
  *     state: Matrix25_1
  *     P: Matrix24_24
- *     distance: Scalar
  *     R: Scalar
  *     epsilon: Scalar
  *
@@ -28,60 +27,66 @@ namespace sym {
  */
 template <typename Scalar>
 void ComputeFlowYInnovVarAndH(const matrix::Matrix<Scalar, 25, 1>& state,
-                              const matrix::Matrix<Scalar, 24, 24>& P, const Scalar distance,
-                              const Scalar R, const Scalar epsilon,
-                              Scalar* const innov_var = nullptr,
+                              const matrix::Matrix<Scalar, 24, 24>& P, const Scalar R,
+                              const Scalar epsilon, Scalar* const innov_var = nullptr,
                               matrix::Matrix<Scalar, 24, 1>* const H = nullptr) {
-  // Total ops: 151
+  // Total ops: 217
 
   // Input arrays
 
-  // Intermediate terms (21)
-  const Scalar _tmp0 =
-      Scalar(1.0) /
-      (distance + epsilon * (2 * math::min<Scalar>(0, (((distance) > 0) - ((distance) < 0))) + 1));
-  const Scalar _tmp1 =
-      _tmp0 * (-2 * std::pow(state(2, 0), Scalar(2)) - 2 * std::pow(state(3, 0), Scalar(2)) + 1);
-  const Scalar _tmp2 = 4 * state(4, 0);
-  const Scalar _tmp3 = 2 * state(0, 0);
-  const Scalar _tmp4 = 2 * state(6, 0);
-  const Scalar _tmp5 = -_tmp2 * state(3, 0) + _tmp3 * state(5, 0) + _tmp4 * state(1, 0);
-  const Scalar _tmp6 = (Scalar(1) / Scalar(2)) * _tmp0;
-  const Scalar _tmp7 = _tmp5 * _tmp6;
+  // Intermediate terms (23)
+  const Scalar _tmp0 = 4 * state(4, 0);
+  const Scalar _tmp1 = 2 * state(5, 0);
+  const Scalar _tmp2 = 2 * state(0, 0);
+  const Scalar _tmp3 = state(24, 0) - state(9, 0);
+  const Scalar _tmp4 =
+      _tmp3 + epsilon * (2 * math::min<Scalar>(0, (((_tmp3) > 0) - ((_tmp3) < 0))) + 1);
+  const Scalar _tmp5 = Scalar(1.0) / (_tmp4);
+  const Scalar _tmp6 = (Scalar(1) / Scalar(2)) * _tmp5;
+  const Scalar _tmp7 = _tmp6 * (-_tmp0 * state(2, 0) + _tmp1 * state(1, 0) - _tmp2 * state(6, 0));
   const Scalar _tmp8 = 2 * state(1, 0);
-  const Scalar _tmp9 = -_tmp2 * state(2, 0) - _tmp4 * state(0, 0) + _tmp8 * state(5, 0);
-  const Scalar _tmp10 = _tmp6 * _tmp9;
-  const Scalar _tmp11 = 2 * state(5, 0);
-  const Scalar _tmp12 = _tmp6 * (_tmp11 * state(2, 0) + _tmp4 * state(3, 0));
-  const Scalar _tmp13 = _tmp11 * state(3, 0) - _tmp4 * state(2, 0);
-  const Scalar _tmp14 = _tmp6 * state(1, 0);
-  const Scalar _tmp15 =
-      _tmp10 * state(3, 0) - _tmp12 * state(0, 0) + _tmp13 * _tmp14 - _tmp7 * state(2, 0);
-  const Scalar _tmp16 = _tmp13 * _tmp6;
-  const Scalar _tmp17 =
-      _tmp12 * state(2, 0) - _tmp14 * _tmp9 + _tmp16 * state(3, 0) - _tmp7 * state(0, 0);
-  const Scalar _tmp18 =
-      -_tmp10 * state(0, 0) - _tmp12 * state(3, 0) + _tmp14 * _tmp5 + _tmp16 * state(2, 0);
-  const Scalar _tmp19 = _tmp0 * (_tmp3 * state(3, 0) + _tmp8 * state(2, 0));
-  const Scalar _tmp20 = _tmp0 * (-_tmp3 * state(2, 0) + _tmp8 * state(3, 0));
+  const Scalar _tmp9 = _tmp6 * (-_tmp0 * state(3, 0) + _tmp2 * state(5, 0) + _tmp8 * state(6, 0));
+  const Scalar _tmp10 = 2 * state(6, 0);
+  const Scalar _tmp11 = _tmp6 * (_tmp1 * state(3, 0) - _tmp10 * state(2, 0));
+  const Scalar _tmp12 = _tmp6 * (_tmp1 * state(2, 0) + _tmp10 * state(3, 0));
+  const Scalar _tmp13 =
+      _tmp11 * state(1, 0) - _tmp12 * state(0, 0) + _tmp7 * state(3, 0) - _tmp9 * state(2, 0);
+  const Scalar _tmp14 = -_tmp2 * state(2, 0) + _tmp8 * state(3, 0);
+  const Scalar _tmp15 = _tmp2 * state(3, 0) + _tmp8 * state(2, 0);
+  const Scalar _tmp16 =
+      -2 * std::pow(state(2, 0), Scalar(2)) - 2 * std::pow(state(3, 0), Scalar(2)) + 1;
+  const Scalar _tmp17 = (_tmp14 * state(6, 0) + _tmp15 * state(5, 0) + _tmp16 * state(4, 0)) /
+                        std::pow(_tmp4, Scalar(2));
+  const Scalar _tmp18 = _tmp16 * _tmp5;
+  const Scalar _tmp19 =
+      _tmp11 * state(2, 0) - _tmp12 * state(3, 0) - _tmp7 * state(0, 0) + _tmp9 * state(1, 0);
+  const Scalar _tmp20 =
+      _tmp11 * state(3, 0) + _tmp12 * state(2, 0) - _tmp7 * state(1, 0) - _tmp9 * state(0, 0);
+  const Scalar _tmp21 = _tmp15 * _tmp5;
+  const Scalar _tmp22 = _tmp14 * _tmp5;
 
   // Output terms (2)
   if (innov_var != nullptr) {
     Scalar& _innov_var = (*innov_var);
 
-    _innov_var = R -
-                 _tmp1 * (P(0, 3) * _tmp15 + P(1, 3) * _tmp18 + P(2, 3) * _tmp17 - P(3, 3) * _tmp1 -
-                          P(4, 3) * _tmp19 - P(5, 3) * _tmp20) +
-                 _tmp15 * (P(0, 0) * _tmp15 + P(1, 0) * _tmp18 + P(2, 0) * _tmp17 -
-                           P(3, 0) * _tmp1 - P(4, 0) * _tmp19 - P(5, 0) * _tmp20) +
-                 _tmp17 * (P(0, 2) * _tmp15 + P(1, 2) * _tmp18 + P(2, 2) * _tmp17 -
-                           P(3, 2) * _tmp1 - P(4, 2) * _tmp19 - P(5, 2) * _tmp20) +
-                 _tmp18 * (P(0, 1) * _tmp15 + P(1, 1) * _tmp18 + P(2, 1) * _tmp17 -
-                           P(3, 1) * _tmp1 - P(4, 1) * _tmp19 - P(5, 1) * _tmp20) -
-                 _tmp19 * (P(0, 4) * _tmp15 + P(1, 4) * _tmp18 + P(2, 4) * _tmp17 -
-                           P(3, 4) * _tmp1 - P(4, 4) * _tmp19 - P(5, 4) * _tmp20) -
-                 _tmp20 * (P(0, 5) * _tmp15 + P(1, 5) * _tmp18 + P(2, 5) * _tmp17 -
-                           P(3, 5) * _tmp1 - P(4, 5) * _tmp19 - P(5, 5) * _tmp20);
+    _innov_var =
+        R +
+        _tmp13 * (P(0, 0) * _tmp13 + P(1, 0) * _tmp19 + P(2, 0) * _tmp20 + P(23, 0) * _tmp17 -
+                  P(3, 0) * _tmp18 - P(4, 0) * _tmp21 - P(5, 0) * _tmp22 - P(8, 0) * _tmp17) +
+        _tmp17 * (P(0, 23) * _tmp13 + P(1, 23) * _tmp19 + P(2, 23) * _tmp20 + P(23, 23) * _tmp17 -
+                  P(3, 23) * _tmp18 - P(4, 23) * _tmp21 - P(5, 23) * _tmp22 - P(8, 23) * _tmp17) -
+        _tmp17 * (P(0, 8) * _tmp13 + P(1, 8) * _tmp19 + P(2, 8) * _tmp20 + P(23, 8) * _tmp17 -
+                  P(3, 8) * _tmp18 - P(4, 8) * _tmp21 - P(5, 8) * _tmp22 - P(8, 8) * _tmp17) -
+        _tmp18 * (P(0, 3) * _tmp13 + P(1, 3) * _tmp19 + P(2, 3) * _tmp20 + P(23, 3) * _tmp17 -
+                  P(3, 3) * _tmp18 - P(4, 3) * _tmp21 - P(5, 3) * _tmp22 - P(8, 3) * _tmp17) +
+        _tmp19 * (P(0, 1) * _tmp13 + P(1, 1) * _tmp19 + P(2, 1) * _tmp20 + P(23, 1) * _tmp17 -
+                  P(3, 1) * _tmp18 - P(4, 1) * _tmp21 - P(5, 1) * _tmp22 - P(8, 1) * _tmp17) +
+        _tmp20 * (P(0, 2) * _tmp13 + P(1, 2) * _tmp19 + P(2, 2) * _tmp20 + P(23, 2) * _tmp17 -
+                  P(3, 2) * _tmp18 - P(4, 2) * _tmp21 - P(5, 2) * _tmp22 - P(8, 2) * _tmp17) -
+        _tmp21 * (P(0, 4) * _tmp13 + P(1, 4) * _tmp19 + P(2, 4) * _tmp20 + P(23, 4) * _tmp17 -
+                  P(3, 4) * _tmp18 - P(4, 4) * _tmp21 - P(5, 4) * _tmp22 - P(8, 4) * _tmp17) -
+        _tmp22 * (P(0, 5) * _tmp13 + P(1, 5) * _tmp19 + P(2, 5) * _tmp20 + P(23, 5) * _tmp17 -
+                  P(3, 5) * _tmp18 - P(4, 5) * _tmp21 - P(5, 5) * _tmp22 - P(8, 5) * _tmp17);
   }
 
   if (H != nullptr) {
@@ -89,12 +94,14 @@ void ComputeFlowYInnovVarAndH(const matrix::Matrix<Scalar, 25, 1>& state,
 
     _h.setZero();
 
-    _h(0, 0) = _tmp15;
-    _h(1, 0) = _tmp18;
-    _h(2, 0) = _tmp17;
-    _h(3, 0) = -_tmp1;
-    _h(4, 0) = -_tmp19;
-    _h(5, 0) = -_tmp20;
+    _h(0, 0) = _tmp13;
+    _h(1, 0) = _tmp19;
+    _h(2, 0) = _tmp20;
+    _h(3, 0) = -_tmp18;
+    _h(4, 0) = -_tmp21;
+    _h(5, 0) = -_tmp22;
+    _h(8, 0) = -_tmp17;
+    _h(23, 0) = _tmp17;
   }
 }  // NOLINT(readability/fn_size)
 
