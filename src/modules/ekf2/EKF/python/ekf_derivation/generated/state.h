@@ -18,7 +18,7 @@ struct StateSample {
 	matrix::Vector3<float> mag_I{};
 	matrix::Vector3<float> mag_B{};
 	matrix::Vector2<float> wind_vel{};
-	float dist_bottom{};
+	float terrain{};
 
 	matrix::Vector<float, 25> Data() const {
 		matrix::Vector<float, 25> state;
@@ -30,7 +30,7 @@ struct StateSample {
 		state.slice<3, 1>(16, 0) = mag_I;
 		state.slice<3, 1>(19, 0) = mag_B;
 		state.slice<2, 1>(22, 0) = wind_vel;
-		state.slice<1, 1>(24, 0) = dist_bottom;
+		state.slice<1, 1>(24, 0) = terrain;
 		return state;
 	};
 
@@ -51,7 +51,7 @@ namespace State {
 	static constexpr IdxDof mag_I{15, 3};
 	static constexpr IdxDof mag_B{18, 3};
 	static constexpr IdxDof wind_vel{21, 2};
-	static constexpr IdxDof dist_bottom{23, 1};
+	static constexpr IdxDof terrain{23, 1};
 	static constexpr uint8_t size{24};
 };
 }

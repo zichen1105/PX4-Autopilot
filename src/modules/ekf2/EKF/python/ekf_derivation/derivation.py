@@ -69,7 +69,7 @@ State = Values(
     mag_I = sf.V3(),
     mag_B = sf.V3(),
     wind_vel = sf.V2(),
-    dist_bottom = sf.V1()
+    terrain = sf.V1()
 )
 
 if args.disable_mag:
@@ -134,7 +134,7 @@ def predict_covariance(
         mag_I = sf.V3.symbolic("mag_I"),
         mag_B = sf.V3.symbolic("mag_B"),
         wind_vel = sf.V2.symbolic("wind_vel"),
-        dist_bottom = sf.V1.symbolic("dist_bottom")
+        terrain = sf.V1.symbolic("terrain")
     )
 
     if args.disable_mag:
@@ -169,7 +169,6 @@ def predict_covariance(
     state_t_pred["quat_nominal"] = state_t["quat_nominal"] * sf.Rot3(sf.Quaternion(xyz=(input_t["gyro"] * dt / 2), w=1))
     state_t_pred["vel"] = state_t["vel"] + (R_t * input_t["accel"] + sf.V3(0, 0, g)) * dt
     state_t_pred["pos"] = state_t["pos"] + state_t["vel"] * dt
-    state_t_pred["dist_bottom"] = state_t["dist_bottom"] - state_t["vel"][2] * dt
 
     # Nominal state kinematics
     input = Values(
@@ -182,7 +181,6 @@ def predict_covariance(
     state_pred["quat_nominal"] = state["quat_nominal"] * sf.Rot3(sf.Quaternion(xyz=(input["gyro"] * dt / 2), w=1))
     state_pred["vel"] = state["vel"] + (R * input["accel"] + sf.V3(0, 0, g)) * dt
     state_pred["pos"] = state["pos"] + state["vel"] * dt
-    state_pred["dist_bottom"] = state["dist_bottom"][0] - state["vel"][1] * dt
 
     # Error state kinematics
     state_error_pred = Values()
