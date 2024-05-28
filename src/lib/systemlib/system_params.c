@@ -88,8 +88,8 @@ PARAM_DEFINE_INT32(SYS_HITL, 0);
  *
  * This is used internally only: an airframe configuration might set an expected
  * parameter version value via PARAM_DEFAULTS_VER. This is checked on bootup
- * against SYS_PARAM_VER, and if they do not match, parameters from the airframe
- * configuration are reloaded.
+ * against SYS_PARAM_VER, and if they do not match, parameters are reset and
+ * reloaded from the airframe configuration.
  *
  * @min 0
  * @group System
