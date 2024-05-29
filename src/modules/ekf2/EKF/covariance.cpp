@@ -210,6 +210,18 @@ void Ekf::predictCovariance(const imuSample &imu_delayed)
 		}
 	}
 
+#if defined(CONFIG_EKF2_TERRAIN)
+	{
+		// predict the state variance growth where the state is the vertical position of the terrain underneath the vehicle
+		// process noise due to errors in vehicle height estimate
+		float terrain_process_noise = sq(imu_delayed.delta_vel_dt * _params.terrain_p_noise);
+
+		// process noise due to terrain gradient
+		terrain_process_noise += sq(imu_delayed.delta_vel_dt * _params.terrain_gradient) * (sq(_state.vel(0)) + sq(_state.vel(1)));
+		P(State::terrain.idx, State::terrain.idx) += terrain_process_noise;
+	}
+#endif // CONFIG_EKF2_TERRAIN
+
 	constrainStateVariances();
 }
 
@@ -239,6 +251,10 @@ void Ekf::constrainStateVariances()
 		constrainStateVarLimitRatio(State::wind_vel, 1e-6f, 1e6f);
 	}
 #endif // CONFIG_EKF2_WIND
+
+#if defined(CONFIG_EKF2_TERRAIN)
+	constrainStateVarLimitRatio(State::terrain, 0.f, 1e4f);
+#endif // CONFIG_EKF2_TERRAIN
 }
 
 void Ekf::constrainStateVar(const IdxDof &state, float min, float max)

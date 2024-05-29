@@ -164,7 +164,6 @@ void Ekf::reset()
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW)
 	resetEstimatorAidStatus(_aid_src_optical_flow);
-	resetEstimatorAidStatus(_aid_src_terrain_optical_flow);
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
 #if defined(CONFIG_EKF2_RANGE_FINDER)
@@ -208,7 +207,6 @@ bool Ekf::update()
 		controlFusionModes(imu_sample_delayed);
 
 #if defined(CONFIG_EKF2_TERRAIN)
-		// run a separate filter for terrain estimation
 		runTerrainEstimator(imu_sample_delayed);
 #endif // CONFIG_EKF2_TERRAIN
 
@@ -248,7 +246,7 @@ bool Ekf::initialiseFilter()
 	initialiseCovariance();
 
 #if defined(CONFIG_EKF2_TERRAIN)
-	// Initialise the terrain estimator
+	// Initialise the terrain state
 	initHagl();
 #endif // CONFIG_EKF2_TERRAIN
 

@@ -242,12 +242,12 @@ bool EkfWrapper::isWindVelocityEstimated() const
 
 void EkfWrapper::enableTerrainRngFusion()
 {
-	_ekf_params->terrain_fusion_mode |= TerrainFusionMask::TerrainFuseRangeFinder;
+	_ekf_params->terrain_fusion_mode |= static_cast<int32_t>(TerrainFusionMask::TerrainFuseRangeFinder);
 }
 
 void EkfWrapper::disableTerrainRngFusion()
 {
-	_ekf_params->terrain_fusion_mode &= ~TerrainFusionMask::TerrainFuseRangeFinder;
+	_ekf_params->terrain_fusion_mode &= ~static_cast<int32_t>(TerrainFusionMask::TerrainFuseRangeFinder);
 }
 
 bool EkfWrapper::isIntendingTerrainRngFusion() const
@@ -259,12 +259,12 @@ bool EkfWrapper::isIntendingTerrainRngFusion() const
 
 void EkfWrapper::enableTerrainFlowFusion()
 {
-	_ekf_params->terrain_fusion_mode |= TerrainFusionMask::TerrainFuseOpticalFlow;
+	_ekf_params->terrain_fusion_mode |= static_cast<int32_t>(TerrainFusionMask::TerrainFuseOpticalFlow);
 }
 
 void EkfWrapper::disableTerrainFlowFusion()
 {
-	_ekf_params->terrain_fusion_mode &= ~TerrainFusionMask::TerrainFuseOpticalFlow;
+	_ekf_params->terrain_fusion_mode &= ~static_cast<int32_t>(TerrainFusionMask::TerrainFuseOpticalFlow);
 }
 
 bool EkfWrapper::isIntendingTerrainFlowFusion() const

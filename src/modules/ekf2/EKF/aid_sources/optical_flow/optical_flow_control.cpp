@@ -77,20 +77,15 @@ void Ekf::controlOpticalFlowFusion(const imuSample &imu_delayed)
 					&& (_control_status.flags.inertial_dead_reckoning // is doing inertial dead-reckoning so must constrain drift urgently
 					|| isOnlyActiveSourceOfHorizontalAiding(_control_status.flags.opt_flow));
 
-		// Fuse optical flow LOS rate observations into the main filter only if height above ground has been updated recently
-		// use a relaxed time criteria to enable it to coast through bad range finder data
-		const bool terrain_available = isTerrainEstimateValid() || isRecent(_aid_src_terrain_range_finder.time_last_fuse, (uint64_t)10e6);
-
 		const bool continuing_conditions_passing = (_params.flow_ctrl == 1)
-							   && _control_status.flags.tilt_align
-							   && (terrain_available || is_flow_required);
+							   && _control_status.flags.tilt_align;
 
 		const bool starting_conditions_passing = continuing_conditions_passing
 							 && isTimedOut(_aid_src_optical_flow.time_last_fuse, (uint64_t)2e6); // Prevent rapid switching
 
 		if (_control_status.flags.opt_flow) {
 			if (continuing_conditions_passing) {
-				fuseOptFlow();
+				fuseOptFlow(_hagl_sensor_status.flags.flow);
 
 				// handle the case when we have optical flow, are reliant on it, but have not been using it for an extended period
 				if (isTimedOut(_aid_src_optical_flow.time_last_fuse, _params.no_aid_timeout_max)) {
@@ -120,19 +115,38 @@ void Ekf::controlOpticalFlowFusion(const imuSample &imu_delayed)
 void Ekf::startFlowFusion()
 {
 	ECL_INFO("starting optical flow fusion");
+	if (_params.terrain_fusion_mode & static_cast<int32_t>(TerrainFusionMask::TerrainFuseOpticalFlow)) {
+		_hagl_sensor_status.flags.flow = true;
+	}
 
-	if (!_aid_src_optical_flow.innovation_rejected && isHorizontalAidingActive()) {
-		// Consistent with the current velocity state, simply fuse the data without reset
-		fuseOptFlow();
-		_control_status.flags.opt_flow = true;
+	_control_status.flags.opt_flow = true;
 
-	} else if (!isHorizontalAidingActive()) {
-		resetFlowFusion();
-		_control_status.flags.opt_flow = true;
+	if (isHorizontalAidingActive()) {
+		if (!_aid_src_optical_flow.innovation_rejected) {
+			fuseOptFlow(_hagl_sensor_status.flags.flow);
+
+		} else if (!_hagl_sensor_status.flags.range_finder && _hagl_sensor_status.flags.flow) {
+			resetHaglFlow();
+
+		} else {
+			ECL_INFO("optical flow fusion failed to start");
+			_control_status.flags.opt_flow = false;
+			_hagl_sensor_status.flags.flow = false;
+		}
 
 	} else {
-		ECL_INFO("optical flow fusion failed to start");
-		_control_status.flags.opt_flow = false;
+		if (isTerrainEstimateValid()) {
+			resetFlowFusion();
+
+		} else if (_hagl_sensor_status.flags.flow) {
+			resetHaglFlow();
+			// mark as fused
+
+		} else {
+			ECL_INFO("optical flow fusion failed to start");
+			_control_status.flags.opt_flow = false;
+			_hagl_sensor_status.flags.flow = false;
+		}
 	}
 }
 
