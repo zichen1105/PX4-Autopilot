@@ -104,20 +104,21 @@ void Ekf::controlRangeHeightFusion()
 							    || (_params.rng_ctrl == static_cast<int32_t>(RngCtrl::CONDITIONAL))
 							    || (_params.terrain_fusion_mode & static_cast<int32_t>(TerrainFusionMask::TerrainFuseRangeFinder)))
 							   && measurement_valid
-							   && _range_sensor.isDataHealthy();
+							   && _range_sensor.isDataHealthy()
+						           && _rng_consistency_check.isKinematicallyConsistent();
 
 		const bool starting_conditions_passing = continuing_conditions_passing
 				&& isNewestSampleRecent(_time_last_range_buffer_push, 2 * estimator::sensor::RNG_MAX_INTERVAL)
 				&& _range_sensor.isRegularlySendingData();
 
-		if (_control_status.flags.rng_hgt) {
+		if (_control_status.flags.rng_hgt || _hagl_sensor_status.flags.range_finder) {
 			if (continuing_conditions_passing) {
 
 				fuseHaglRng(aid_src, _control_status.flags.rng_hgt, _hagl_sensor_status.flags.range_finder);
 
 				const bool is_fusion_failing = isTimedOut(aid_src.time_last_fuse, _params.hgt_fusion_timeout_max);
 
-				if (isHeightResetRequired()) {
+				if (isHeightResetRequired() && _control_status.flags.rng_hgt) {
 					// All height sources are failing
 					ECL_WARN("%s height fusion reset required, all height sources failing", HGT_SRC_NAME);
 

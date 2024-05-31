@@ -498,7 +498,9 @@ void Ekf::fuse(const VectorState &K, float innovation)
 	}
 #endif // CONFIG_EKF2_WIND
 
+#if defined(CONFIG_EKF2_TERRAIN)
 	_state.terrain = math::constrain(_state.terrain - K(State::terrain.idx) * innovation, -1e3f, 1e3f);
+#endif // CONFIG_EKF2_TERRAIN
 }
 
 void Ekf::updateDeadReckoningStatus()
