@@ -211,7 +211,7 @@ void Ekf::predictCovariance(const imuSample &imu_delayed)
 	}
 
 #if defined(CONFIG_EKF2_TERRAIN)
-	{
+	if (_height_sensor_ref != HeightSensor::RANGE) {
 		// predict the state variance growth where the state is the vertical position of the terrain underneath the vehicle
 		// process noise due to errors in vehicle height estimate
 		float terrain_process_noise = sq(imu_delayed.delta_vel_dt * _params.terrain_p_noise);
