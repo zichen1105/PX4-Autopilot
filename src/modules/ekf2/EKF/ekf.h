@@ -823,7 +823,7 @@ private:
 	// update the terrain vertical position estimate using a height above ground measurement from the range finder
 	bool fuseHaglRng(estimator_aid_source1d_s &aid_src, bool update_height, bool update_terrain);
 	void updateRangeHeight(estimator_aid_source1d_s &aid_src);
-	void resetHaglRng();
+	void resetHaglRng(estimator_aid_source1d_s &aid_src);
 	float getRngVar() const;
 # endif // CONFIG_EKF2_RANGE_FINDER
 
@@ -839,6 +839,7 @@ private:
 	void controlRangeHeightFusion();
 	bool isConditionalRangeAidSuitable();
 	void stopRngHgtFusion();
+	void stopRngTerrFusion();
 #endif // CONFIG_EKF2_RANGE_FINDER
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW)

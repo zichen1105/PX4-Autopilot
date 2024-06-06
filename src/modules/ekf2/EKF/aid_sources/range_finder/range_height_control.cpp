@@ -116,7 +116,7 @@ void Ekf::controlRangeHeightFusion()
 						      && isConditionalRangeAidSuitable();
 
 		const bool do_range_aid = _hagl_sensor_status.flags.range_finder
-					  && ((_params.rng_ctrl == static_cast<int32_t>(RngCtrl::ENABLED));
+					  && (_params.rng_ctrl == static_cast<int32_t>(RngCtrl::ENABLED));
 
 		if (_control_status.flags.rng_hgt) {
 			if (!(do_conditional_range_aid || do_range_aid)) {
@@ -233,7 +233,7 @@ void Ekf::updateRangeHeight(estimator_aid_source1d_s &aid_src)
 	resetEstimatorAidStatus(aid_src);
 
 	aid_src.observation = math::max(_range_sensor.getDistBottom(), _params.rng_gnd_clearance);
-	aid_src.innovation = (_state.terrain - _state.pos(2)) - aid_src.observation;
+	aid_src.innovation = getHagl() - aid_src.observation;
 
 	aid_src.observation_variance = getRngVar();
 
@@ -262,31 +262,26 @@ float Ekf::getRngVar() const
 	       0.f);
 }
 
-void Ekf::resetHaglRng()
+void Ekf::resetHaglRng(estimator_aid_source1d_s &aid_src)
 {
-	_state.terrain = _state.pos(2) + _range_sensor.getDistBottom();
-	P.uncorrelateCovarianceSetVariance<State::terrain.dof>(State::terrain.idx, getRngVar());
+	_state.terrain = _state.pos(2) + aid_src.observation;
+	P.uncorrelateCovarianceSetVariance<State::terrain.dof>(State::terrain.idx, aid_src.observation_variance);
 	_terrain_vpos_reset_counter++;
 
-	_aid_src_rng_hgt.time_last_fuse = _time_delayed_us;
+	aid_src.time_last_fuse = _time_delayed_us;
 }
 
 bool Ekf::isConditionalRangeAidSuitable()
 {
 #if defined(CONFIG_EKF2_TERRAIN)
 
-	if (_control_status.flags.in_air
-	    && _range_sensor.isHealthy()
-	    && isTerrainEstimateValid()) {
+	if (_control_status.flags.in_air) {
 		// check if we can use range finder measurements to estimate height, use hysteresis to avoid rapid switching
 		// Note that the 0.7 coefficients and the innovation check are arbitrary values but work well in practice
 		float range_hagl_max = _params.max_hagl_for_range_aid;
 		float max_vel_xy = _params.max_vel_for_range_aid;
 
-		const float hagl_innov = _aid_src_rng_hgt.innovation;
-		const float hagl_innov_var = _aid_src_rng_hgt.innovation_variance;
-
-		const float hagl_test_ratio = (hagl_innov * hagl_innov / (sq(_params.range_aid_innov_gate) * hagl_innov_var));
+		const float hagl_test_ratio = _aid_src_rng_hgt.test_ratio;
 
 		bool is_hagl_stable = (hagl_test_ratio < 1.f);
 

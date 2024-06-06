@@ -115,17 +115,15 @@ void Ekf::controlOpticalFlowFusion(const imuSample &imu_delayed)
 void Ekf::startFlowFusion()
 {
 	ECL_INFO("starting optical flow fusion");
-	if (_params.terrain_fusion_mode & static_cast<int32_t>(TerrainFusionMask::TerrainFuseOpticalFlow)) {
-		_hagl_sensor_status.flags.flow = true;
-	}
 
+	_hagl_sensor_status.flags.flow = true;
 	_control_status.flags.opt_flow = true;
 
 	if (isHorizontalAidingActive()) {
 		if (!_aid_src_optical_flow.innovation_rejected) {
 			fuseOptFlow(_hagl_sensor_status.flags.flow);
 
-		} else if (!_hagl_sensor_status.flags.range_finder && _hagl_sensor_status.flags.flow) {
+		} else if (!_hagl_sensor_status.flags.range_finder) {
 			resetHaglFlow();
 
 		} else {
@@ -138,14 +136,8 @@ void Ekf::startFlowFusion()
 		if (isTerrainEstimateValid()) {
 			resetFlowFusion();
 
-		} else if (_hagl_sensor_status.flags.flow) {
-			resetHaglFlow();
-			// mark as fused
-
 		} else {
-			ECL_INFO("optical flow fusion failed to start");
-			_control_status.flags.opt_flow = false;
-			_hagl_sensor_status.flags.flow = false;
+			resetHaglFlow();
 		}
 	}
 }
@@ -174,6 +166,7 @@ void Ekf::stopFlowFusion()
 	if (_control_status.flags.opt_flow) {
 		ECL_INFO("stopping optical flow fusion");
 		_control_status.flags.opt_flow = false;
+		_hagl_sensor_status.flags.flow = false;
 
 		resetEstimatorAidStatus(_aid_src_optical_flow);
 	}

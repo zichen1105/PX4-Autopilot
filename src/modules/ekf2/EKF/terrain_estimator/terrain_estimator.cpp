@@ -66,11 +66,6 @@ void Ekf::runTerrainEstimator(const imuSample &imu_delayed)
 	}
 
 	controlHaglFakeFusion();
-
-	// constrain terrain to be at least below the vehicle
-	if (getHagl() < _params.rng_gnd_clearance) {
-		_state.terrain = _params.rng_gnd_clearance + _state.pos(2);
-	}
 }
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW)
@@ -114,23 +109,18 @@ void Ekf::controlHaglFakeFusion()
 
 bool Ekf::isTerrainEstimateValid() const
 {
-	bool valid = false;
+	bool valid = getTerrainVariance() < 1.f;
 
 #if defined(CONFIG_EKF2_RANGE_FINDER)
 
-	// we have been fusing range finder measurements in the last 5 seconds
-	if (isRecent(_aid_src_rng_hgt.time_last_fuse, (uint64_t)5e6)) {
-		if (_hagl_sensor_status.flags.range_finder || !_control_status.flags.in_air) {
-			valid = true;
-		}
+	if (_hagl_sensor_status.flags.range_finder && isRecent(_aid_src_rng_hgt.time_last_fuse, (uint64_t)5e6)) {
+		valid = true;
 	}
 
 #endif // CONFIG_EKF2_RANGE_FINDER
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW)
 
-	// we have been fusing optical flow measurements for terrain estimation within the last 5 seconds
-	// this can only be the case if the main filter does not fuse optical flow
 	if (_hagl_sensor_status.flags.flow && isRecent(_aid_src_optical_flow.time_last_fuse, (uint64_t)5e6)) {
 		valid = true;
 	}
