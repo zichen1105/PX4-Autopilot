@@ -469,11 +469,12 @@ def predict_opt_flow(state, epsilon):
 
     # Divide by range to get predicted angular LOS rates relative to X and Y
     # axes. Note these are rates in a non-rotating sensor frame
-    distance = predict_hagl(state)
+    hagl = predict_hagl(state)
+    hagl = add_epsilon_sign(hagl, hagl, epsilon)
+    R_to_earth = state["quat_nominal"].to_rotation_matrix()
     flow_pred = sf.V2()
-    flow_pred[0] =  rel_vel_sensor[1] / distance
-    flow_pred[1] = -rel_vel_sensor[0] / distance
-    flow_pred = add_epsilon_sign(flow_pred, distance, epsilon)
+    flow_pred[0] =  rel_vel_sensor[1] / hagl * R_to_earth[2, 2]
+    flow_pred[1] = -rel_vel_sensor[0] / hagl * R_to_earth[2, 2]
 
     return flow_pred
 
