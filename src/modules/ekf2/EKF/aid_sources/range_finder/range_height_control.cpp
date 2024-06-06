@@ -111,15 +111,16 @@ void Ekf::controlRangeHeightFusion()
 				&& _range_sensor.isRegularlySendingData();
 
 
-		const bool do_conditional_range_aid = _hagl_sensor_status.flags.range_finder
+		const bool do_conditional_range_aid = (_hagl_sensor_status.flags.range_finder || _control_status.flags.rng_hgt)
 						      && (_params.rng_ctrl == static_cast<int32_t>(RngCtrl::CONDITIONAL))
 						      && isConditionalRangeAidSuitable();
 
-		const bool do_range_aid = _hagl_sensor_status.flags.range_finder
+		const bool do_range_aid = (_hagl_sensor_status.flags.range_finder || _control_status.flags.rng_hgt)
 					  && (_params.rng_ctrl == static_cast<int32_t>(RngCtrl::ENABLED));
 
 		if (_control_status.flags.rng_hgt) {
 			if (!(do_conditional_range_aid || do_range_aid)) {
+				ECL_INFO("stopping %s fusion", HGT_SRC_NAME);
 				stopRngHgtFusion();
 			}
 
@@ -315,22 +316,11 @@ void Ekf::stopRngHgtFusion()
 			_height_sensor_ref = HeightSensor::UNKNOWN;
 		}
 
-		if (!_hagl_sensor_status.flags.range_finder) {
-			resetEstimatorAidStatus(_aid_src_rng_hgt);
-		}
-
 		_control_status.flags.rng_hgt = false;
 	}
 }
 
 void Ekf::stopRngTerrFusion()
 {
-	if (_hagl_sensor_status.flags.range_finder) {
-
-		if (!_control_status.flags.rng_hgt) {
-			resetEstimatorAidStatus(_aid_src_rng_hgt);
-		}
-
-		_hagl_sensor_status.flags.range_finder = false;
-	}
+	_hagl_sensor_status.flags.range_finder = false;
 }
