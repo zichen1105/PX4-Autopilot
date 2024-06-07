@@ -168,6 +168,19 @@ void Ekf::resetFlowFusion()
 	_aid_src_optical_flow.time_last_fuse = _time_delayed_us;
 }
 
+void Ekf::resetHaglFlow()
+{
+	// TODO: use the flow data
+	_state.terrain = fmaxf(0.0f, _state.pos(2));
+	P.uncorrelateCovarianceSetVariance<1>(State::terrain.idx, 100.f);
+	_terrain_vpos_reset_counter++;
+
+	_innov_check_fail_status.flags.reject_optflow_X = false;
+	_innov_check_fail_status.flags.reject_optflow_Y = false;
+
+	_aid_src_optical_flow.time_last_fuse = _time_delayed_us;
+}
+
 void Ekf::stopFlowFusion()
 {
 	if (_control_status.flags.opt_flow) {
