@@ -92,7 +92,8 @@ void Ekf::controlHaglFakeFusion()
 
 bool Ekf::isTerrainEstimateValid() const
 {
-	bool valid = getTerrainVariance() < 1.f;
+	// Assume being valid when the uncertainty is small compared to the height above ground
+	bool valid = getTerrainVariance() < sq(0.1f * getHagl());
 
 #if defined(CONFIG_EKF2_RANGE_FINDER)
 
