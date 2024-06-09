@@ -565,6 +565,10 @@ menu "Zenoh publishers/subscribers"
 		bool "register_ext_component_request"
 		default n
 
+	config ZENOH_PUBSUB_ROVER_ACKERMANN_GUIDANCE_STATUS
+		bool "rover_ackermann_guidance_status"
+		default n
+
 	config ZENOH_PUBSUB_RPM
 		bool "rpm"
 		default n
@@ -999,6 +1003,7 @@ config ZENOH_PUBSUB_ALL_SELECTION
 	select ZENOH_PUBSUB_RC_PARAMETER_MAP
 	select ZENOH_PUBSUB_REGISTER_EXT_COMPONENT_REPLY
 	select ZENOH_PUBSUB_REGISTER_EXT_COMPONENT_REQUEST
+	select ZENOH_PUBSUB_ROVER_ACKERMANN_GUIDANCE_STATUS
 	select ZENOH_PUBSUB_RPM
 	select ZENOH_PUBSUB_RTL_STATUS
 	select ZENOH_PUBSUB_RTL_TIME_ESTIMATE
